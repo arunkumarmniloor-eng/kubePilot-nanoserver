@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "arundevops0047/nano-backend"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/arunkumarmniloor-eng/kubePilot-nanoserver.git'
+            }
+        }
+
+        stage('Deploy to K3s') {
+            steps {
+                sh '''
+                sudo k3s kubectl set image deployment/nano-backend \
+                nano-backend=$IMAGE_NAME:latest || true
+
+                sudo k3s kubectl apply -f k8s/deployment.yaml
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh "sudo k3s kubectl get pods"
+                sh "sudo k3s kubectl get svc"
+            }
+        }
+    }
+}
